@@ -69,7 +69,10 @@ function ChatAutocompleteIntegrator:Enable()
       chatFrameEditBox:HookScript('OnEditFocusLost', self.methods._OnChatFocusLost)
       chatFrameEditBox:HookScript('OnTextChanged', self.methods._OnChatTextChanged)
       chatFrameEditBox:HookScript('OnCursorChanged', function(editBox, cursorOffsetX)
-        self.editBoxCursorOffsets[editBox] = cursorOffsetX
+        -- The offset is used in arithmetic later, which a secret value forbids
+        if not util.IsSecret(cursorOffsetX) then
+          self.editBoxCursorOffsets[editBox] = cursorOffsetX
+        end
       end)
     end
   end
@@ -135,8 +138,18 @@ function ChatAutocompleteIntegrator:_OnChatTextChanged(editBox, isUserInput)
     return
   end
 
+  local text = editBox:GetText()
+
+  -- Under chat restrictions (instances on Forever and retail) the edit box can
+  -- hold secret text, which addon code may not inspect. Stand aside until the
+  -- restriction lifts rather than throw an error on every keystroke.
+  if util.IsSecret(text) or util.IsSecret(editBox:GetCursorPosition()) then
+    self.buttonMenu:Hide()
+    return
+  end
+
   -- If it's potentially a secure command, abort to avoid runtime taint
-  if string.byte(editBox:GetText() or '') == string.byte('/') then
+  if string.byte(text or '') == string.byte('/') then
     self.buttonMenu:Hide()
     return
   end
@@ -192,6 +205,13 @@ end
 function ChatAutocompleteIntegrator:_GetEditBoxSearchTerm(editBox)
   local cursorPosition = editBox:GetCursorPosition()
   local text = editBox:GetText()
+
+  -- Reached asynchronously as well, so the text may have turned secret since
+  -- the search began. See '_OnChatTextChanged'.
+  if util.IsSecret(text) or util.IsSecret(cursorPosition) then
+    return nil, nil, nil
+  end
+
   local activeText = text:sub(1, cursorPosition)
   local searchTerm, startIndex = self:_ExtractSearchTerm(activeText)
 

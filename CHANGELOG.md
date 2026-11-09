@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Compatibility with the WoW Forever client (1.60.1)
+- `/iascan` measures the client's item table and saves the ID ranges, for
+  maintaining the per-client scan ranges after a patch
+
+### Fixed
+
+- Autocomplete steps aside instead of erroring when the chat edit box holds
+  secret text, which clients on the Midnight UI use while chat restrictions are
+  in effect
+
 ## [2.1.0] - 2026-08-15
 
 ### Added

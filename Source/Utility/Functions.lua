@@ -76,6 +76,28 @@ function export.IsTbc()
   return _G.WOW_PROJECT_ID == _G.WOW_PROJECT_BURNING_CRUSADE_CLASSIC
 end
 
+-- Returns whether the current client is WoW Forever or not
+--
+-- Forever runs the retail UI, and its project still carries the 'Camelot'
+-- codename. The 'Forever' name is checked too in case Blizzard renames it.
+function export.IsForever()
+  local projectId = _G.WOW_PROJECT_FOREVER or _G.WOW_PROJECT_CAMELOT
+  return projectId ~= nil and _G.WOW_PROJECT_ID == projectId
+end
+
+-- Returns whether a value is a secret value or not
+--
+-- Clients built on the Midnight UI hand restricted data to addons as secret
+-- values, which addon code may not compare, index or do arithmetic on. Older
+-- clients have no secret values, hence the fallback.
+local issecretvalue = _G.issecretvalue or function()
+  return false
+end
+
+function export.IsSecret(value)
+  return issecretvalue(value)
+end
+
 -- Returns whether the current client is Season of Mastery or not
 function export.IsSom()
   return C_Seasons ~= nil and C_Seasons.HasActiveSeason() and

@@ -171,6 +171,28 @@ eventSource:AddListener('ADDON_LOADED', function(addonName)
   -- Allow users to manually update the item database
   util.RegisterSlashCommand('iaupdate', updateItemDatabase)
 
+  -- Maintainer tool: measure the client's item table for 'GetItemIdRanges'.
+  -- The result lands in the saved variables as well, so it can be read from
+  -- the WTF folder after a reload instead of copied out of the chat window.
+  util.RegisterSlashCommand('iascan', function()
+    util.PrettyPrint('Scanning the client item table')
+    itemDatabase:ScanItemIdsAsync(function(ranges)
+      local total = 0
+      for _, range in ipairs(ranges) do
+        total = total + range[3]
+      end
+
+      local scan = persistence:GetAccountItem('itemIdScan')
+      scan.build = table.concat({ GetBuildInfo() }, ' ', 1, 2)
+      scan.projectId = _G.WOW_PROJECT_ID
+      scan.ranges = ranges
+
+      util.PrettyPrint(string.format('Found %d items in %d ranges, highest ID %d.', total,
+                                     #ranges, ranges[#ranges] and ranges[#ranges][2] or 0))
+      util.PrettyPrint('Saved to the addon\'s saved variables, /reload to write them out.')
+    end)
+  end)
+
   -- Bootstrapping complete - enable chat integration
   local chatAutocompleteIntegrator = ChatAutocompleteIntegrator.New()
   chatAutocompleteIntegrator:AddCompletionSource(config.itemCompletionTrigger, itemCompletionSource)

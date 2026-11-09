@@ -57,6 +57,17 @@ local function GetItemIdRanges()
     }
   end
 
+  if util.IsForever() then
+    -- PROVISIONAL: borrowed from Classic Era until Forever's own item table is
+    -- measured with '/iascan'. Forever runs on the retail client, so its table
+    -- may well hold every retail item, and those need filtering out rather
+    -- than scanning blindly up to the retail maximum.
+    return {
+      { 1, 24358 }, -- Defaults
+      { 122270, 122284 }, -- WoW Token
+    }
+  end
+
   -- Measured against the item table of the 1.15.9 Classic Era client
   local ranges = {
     { 1, 24358 }, -- Defaults
@@ -98,6 +109,15 @@ end
 local const = util.ReadOnly({
   itemIds = GetItemIdRanges(),
   itemsQueriedPerUpdate = 50,
+  -- Comfortably above the highest retail item ID, so nothing is missed, and
+  -- the extra probes are cheap since they never leave the client.
+  scanMaxItemId = 300000,
+  -- 'GetItemInfoInstant' never leaves the client, so a scan can afford a far
+  -- bigger batch per frame than an update, which waits on the server.
+  itemsScannedPerUpdate = 5000,
+  -- IDs closer than this are folded into one range. Small holes cost little to
+  -- probe, and a short range list is easier to read and maintain.
+  scanRangeGap = 100,
 })
 
 ------------------------------------------
@@ -164,6 +184,19 @@ function ItemDatabase:UpdateItemsAsync(onFinish)
     onFinish = onFinish,
     task = function()
       return self:_TaskUpdateItems(const.itemsQueriedPerUpdate)
+    end,
+  })
+end
+
+-- Walks every item ID the client could know of and reports where they cluster
+--
+-- This is how the ranges in 'GetItemIdRanges' are measured after a patch or
+-- for a new client. 'onFinish' receives a list of { low, high, count } ranges.
+function ItemDatabase:ScanItemIdsAsync(onFinish)
+  self.taskScheduler:Enqueue({
+    onFinish = onFinish,
+    task = function()
+      return self:_TaskScanItemIds(const.itemsScannedPerUpdate)
     end,
   })
 end
@@ -258,6 +291,29 @@ function ItemDatabase:_TaskUpdateItems(itemsPerYield)
 
   self.databaseInfo.version = tonumber(util.GetAddonMetadata('X-ItemDatabaseVersion'))
   return 1
+end
+
+function ItemDatabase:_TaskScanItemIds(itemsPerYield)
+  local ranges = {}
+  local current = nil
+
+  for itemId = 1, const.scanMaxItemId do
+    if DoesItemExist(itemId) then
+      if current ~= nil and itemId - current[2] <= const.scanRangeGap then
+        current[2] = itemId
+        current[3] = current[3] + 1
+      else
+        current = { itemId, itemId, 1 }
+        ranges[#ranges + 1] = current
+      end
+    end
+
+    if itemId % itemsPerYield == 0 then
+      coroutine.yield()
+    end
+  end
+
+  return ranges
 end
 
 ------------------------------------------

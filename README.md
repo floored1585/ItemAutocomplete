@@ -11,6 +11,10 @@ This is an autocomplete addon for item links in WoW Classic. It integrates with 
 | Classic Era & 20th Anniversary  | `ItemAutocomplete_Vanilla.toc` | 11509     |
 | Burning Crusade Anniversary     | `ItemAutocomplete_TBC.toc`     | 20506     |
 | Wrath Classic                   | `ItemAutocomplete_Wrath.toc`   | 30400     |
+| WoW Forever                     | `ItemAutocomplete_Forever.toc` | 16001     |
+
+On WoW Forever, chat restrictions inside instances can hide the chat text from
+addons. Autocomplete pauses while that is in effect and resumes once it lifts.
 
 ## Features
 
@@ -55,6 +59,7 @@ Not a keyboard person? No worries, just use the mouse.
 ## Commands
 
 - `/iaupdate` — Update the item database. If for some reason the item database becomes corrupt or obsolete, you can manually trigger an update with this command.
+- `/iascan` — Maintainer tool. Walks the client's item table and saves where the item IDs cluster to the addon's saved variables, for updating the scan ranges after a patch.
 
 ## Internationalization
 
