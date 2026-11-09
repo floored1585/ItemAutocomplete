@@ -4,7 +4,7 @@
 ## Author: Elliott Linder
 ## Version: 2.1.0
 ## SavedVariables: ItemAutocompleteDB
-## X-ItemDatabaseVersion: 9
+## X-ItemDatabaseVersion: 10
 
 # Libraries
 Libs\Libs.xml

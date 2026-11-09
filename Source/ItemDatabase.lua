@@ -58,13 +58,47 @@ local function GetItemIdRanges()
   end
 
   if util.IsForever() then
-    -- PROVISIONAL: borrowed from Classic Era until Forever's own item table is
-    -- measured with '/iascan'. Forever runs on the retail client, so its table
-    -- may well hold every retail item, and those need filtering out rather
-    -- than scanning blindly up to the retail maximum.
+    -- Measured with '/iascan' against the 1.60.1 Forever client. Despite the
+    -- retail engine, its item table is the Classic Era one, Season of
+    -- Discovery included, plus Forever's own items from roughly 246000 up.
+    -- Every item the client knows of is covered, merged at gaps of 500 IDs.
     return {
       { 1, 24358 }, -- Defaults
+      { 33154 },
+      { 34085, 34319 },
+      { 44803 },
+      { 46102, 46362 },
+      { 47196 },
+      { 49311, 49715 },
+      { 74610, 74611 },
       { 122270, 122284 }, -- WoW Token
+      { 134110, 134112 },
+      { 135510, 135550 },
+      { 142503, 142504 },
+      { 143539 },
+      { 158329 },
+      { 168659, 168665 },
+      { 172070 }, -- Customer Service Package
+      { 180089 }, -- Panda Collar
+      { 184937, 184938 }, -- Chronoboon Displacers
+      { 189419, 189427 }, -- Fire Resist Gear & Raid Consumables
+      { 190179, 190325 }, -- Season of Discovery, through 244460
+      { 191204, 191666 },
+      { 202251, 202641 },
+      { 203723, 213737 },
+      { 214435 },
+      { 215111, 215824 },
+      { 216483, 218117 },
+      { 219021, 221981 },
+      { 222952, 224912 },
+      { 225675, 232652 },
+      { 233197, 240217 },
+      { 240742, 243345 },
+      { 244353, 244460 },
+      { 245675, 260927 }, -- Forever additions start around 246000
+      { 262345, 288340 },
+      { 288896, 289560 },
+      { 290333 },
     }
   end
 
@@ -109,9 +143,9 @@ end
 local const = util.ReadOnly({
   itemIds = GetItemIdRanges(),
   itemsQueriedPerUpdate = 50,
-  -- Comfortably above the highest retail item ID, so nothing is missed, and
-  -- the extra probes are cheap since they never leave the client.
-  scanMaxItemId = 300000,
+  -- Forever's highest item sat at 290333 on 1.60.1, so this leaves room for
+  -- later patches. Extra probes are cheap since they never leave the client.
+  scanMaxItemId = 400000,
   -- 'GetItemInfoInstant' never leaves the client, so a scan can afford a far
   -- bigger batch per frame than an update, which waits on the server.
   itemsScannedPerUpdate = 5000,

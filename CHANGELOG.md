@@ -9,7 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Compatibility with the WoW Forever client (1.60.1)
+- Compatibility with the WoW Forever client (1.60.1), with an item database
+  covering every item the client knows of, measured from its own item table
 - `/iascan` measures the client's item table and saves the ID ranges, for
   maintaining the per-client scan ranges after a patch
 
